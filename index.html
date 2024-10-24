@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Jeu de Mémoire</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amarante&family=Dancing+Script:wght@400..700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      background-color: #1a1a1a;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    
+    h1 {
+      margin-top: 20px;
+      font-size: 3rem;
+      color: #fff;
+      font-family: "Amarante", serif;
+  font-weight: 400;
+  font-style: normal;
+    }
+    
+    .input-container {
+      margin-top: 20px;
+    }
+
+    .input-container input {
+      padding: 10px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      margin-right: 10px;
+      background-color: #333;
+      color: #fff;
+    }
+
+    .input-container button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #444;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .input-container button:hover {
+      background-color: #555;
+    }
+    
+    .score-board {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+    
+    .diamond {
+      color: #fff;
+      font-size: 2rem;
+    }
+    
+    .board {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+      transition: opacity 1s;
+    }
+    
+    .card {
+      background-color: #333;
+      border: 2px solid #555;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 3rem;
+      margin: 10px;
+      padding: 20px;
+      width: 100px;
+      height: 120px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.3s;
+    }
+
+    .card:hover {
+      transform: scale(1.1);
+    }
+
+    #restart, #instructions {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #444;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #restart:hover, #instructions:hover {
+      background-color: #555;
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 14px;
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #fff;
+      border-radius: 50%;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      0% {
+        top: -10px;
+        transform: rotate(0deg);
+      }
+      100% {
+        top: 100vh;
+        transform: rotate(360deg);
+      }
+    }
+
+    #clock {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border: 5px solid #fff;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #clock::before, #clock::after {
+      content: '';
+      position: absolute;
+      background-color: #fff;
+      width: 2px;
+      height: 20px;
+      transform-origin: bottom;
+      animation: rotate 5s linear infinite;
+    }
+
+    #clock::after {
+      height: 15px;
+      animation-duration: 10s;
+    }
+
+    @keyframes rotate {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    #bunny {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      transform: translateX(0);
+      width: 80px;
+      height: 80px;
+      cursor: pointer;
+    }
+
+    #story-cloud {
+      position: fixed;
+      bottom: 80px;
+      left: 20px;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #000;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      display: none;
+      max-width: 300px;
+    }
+
+    #close-cloud {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mémoire Nocturne</h1>
+  <div class="input-container">
+    <input type="text" id="player-name" placeholder="Entrez votre prénom">
+    <button id="play">Jouer</button>
+  </div>
+  <div class="score-board" style="display: none;">
+    <div>Essais Restants: <span id="tries">10</span></div>
+    <div>Score: <span class="diamond">&diams;</span> <span id="score">0</span></div>
+  </div>
+  <div class="board" id="board" style="display: none;"></div>
+  <button id="restart" style="display: none;">Recommencer</button>
+  <button id="instructions" style="display: none;">Instructions</button>
+  
+  <div id="clock" style="display: none;"></div>
+  <img id="bunny" src="images/rabit.png" alt="Lapin">
+  <div id="story-cloud">
+    <button id="close-cloud">&times;</button>
+    <p id="story-text"></p>
+  </div>
+
+  <footer>
+    &copy; Sarah Debiani 2024
+  </footer>
+
+  <script>
+    const symbols = ['♔', '♕', '♖', '♗', '♘', '♙', '♥'];
+    let openedCards = [];
+    let matches = 0;
+    let score = 0;
+    let tries = 10;
+
+    const stories = [
+      "Il était une fois un petit lapin qui adorait jouer aux cartes sombres.",
+      "Le lapin blanc aimait explorer la forêt magique où les cartes racontaient des histoires.",
+      "Chaque carte sombre était un mystère que le lapin voulait résoudre.",
+      "Les cartes étaient des portes vers des mondes fantastiques, et le lapin sautait dedans sans hésiter.",
+      "Le lapin racontait des histoires fascinantes à chaque fois qu'il trouvait une paire de cartes."
+    ];
+
+    function createBoard() {
+      const board = document.getElementById('board');
+      board.innerHTML = '';
+      const cards = [];
+
+      for (let i = 0; i < 2; i++) {
+        for (const symbol of symbols) {
+          cards.push({ symbol, opened: false });
+        }
+      }
+
+      cards.sort(() => 0.5 - Math.random());
+
+      for (const card of cards) {
+        const cardElement = document.createElement('div');
+        cardElement.classList.add('card');
+        cardElement.onclick = () => openCard(card, cardElement);
+        card.element = cardElement; // Associer l'élément à la carte
+        board.appendChild(cardElement);
+      }
+    }
+
+    function openCard(card, cardElement) {
+      if (!card.opened && openedCards.length < 2 && tries > 0) {
+        card.opened = true;
+        cardElement.classList.add('flipped');
+        cardElement.textContent = card.symbol;
+        openedCards.push(card);
+
+        if (openedCards.length === 2) {
+          score++;
+          tries--;
+          updateScore();
+          updateTries();
+
+          if (openedCards[0].symbol === openedCards[1].symbol) {
+            matches++;
+            openedCards = []; // Réinitialiser les cartes ouvertes
+
+            if (matches === symbols.length) {
+              setTimeout(() => {
+                const playerName = document.getElementById('player-name').value;
+                alert(`Félicitations, ${playerName}! Vous avez gagné!`);
+                triggerConfetti();
+                endGame();
+              }, 500);
+            }
+          } else {
+            setTimeout(() => {
+              openedCards.forEach(card => {
+                card.opened = false;
+                card.element.classList.remove('flipped');
+                card.element.textContent = ''; // Vider le contenu de la carte
+              });
+              openedCards = [];
+            }, 1000);
+
+            if (tries <= 0) {
+              setTimeout(() => {
+                alert('Désolé! Vous avez perdu.');
+                endGame();
+              }, 500);
+            }
+          }
+        }
+      }
+    }
+
+    function updateScore() {
+      const scoreElement = document.getElementById('score');
+      scoreElement.textContent = score;
+    }
+
+    function updateTries() {
+      const triesElement = document.getElementById('tries');
+      triesElement.textContent = tries;
+    }
+
+    function endGame() {
+      const board = document.getElementById('board');
+      board.innerHTML = '<h2>Game Over</h2><p>Merci d\'avoir joué!</p>';
+      document.getElementById('restart').style.display = 'none';
+      document.getElementById('instructions').style.display = 'none';
+    }
+
+    document.getElementById('play').onclick = () => {
+      const playerName = document.getElementById('player-name').value;
+      if (playerName.trim() !== '') {
+        matches = 0;
+        score = 0;
+        tries = 10;
+        updateScore();
+        updateTries();
+        createBoard();
+        document.querySelector('.input-container').style.display = 'none';
+        document.querySelector('.score-board').style.display = 'block';
+        document.getElementById('board').style.display = 'flex';
+        document.getElementById('restart').style.display = 'inline-block';
+        document.getElementById('instructions').style.display = 'inline-block';
+
+        // Afficher la montre et l'image du lapin lorsque le jeu commence
+        document.getElementById('clock').style.display = 'block';
+        document.getElementById('bunny').style.display = 'block';
+      } else {
+        alert('Veuillez entrer votre prénom pour commencer le jeu.');
+      }
+    };
+
+    document.getElementById('restart').onclick = () => {
+      matches = 0;
+      score = 0;
+      tries = 10;
+      updateScore();
+      updateTries();
+      createBoard();
+    };
+
+    document.getElementById('instructions').onclick = () => {
+      alert('Bienvenue dans le Jeu de Mémoire!\n\nLe but est de trouver toutes les paires de cartes identiques.\nCliquez sur deux cartes pour les retourner.\nSi les cartes correspondent, elles resteront ouvertes.\nSinon, elles se fermeront et vous devrez les mémoriser pour les prochains essais.\n\nVous avez un maximum de 10 essais pour trouver toutes les paires.\n\nBonne chance!');
+    };
+
+    document.getElementById('bunny').onclick = () => {
+      const storyCloud = document.getElementById('story-cloud');
+      const randomStory = stories[Math.floor(Math.random() * stories.length)];
+      document.getElementById('story-text').textContent = randomStory;
+      storyCloud.style.display = 'block';
+    };
+
+    document.getElementById('close-cloud').onclick = () => {
+      document.getElementById('story-cloud').style.display = 'none';
+    };
+
+    function triggerConfetti() {
+      for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+        document.body.appendChild(confetti);
+        setTimeout(() => {
+          confetti.remove();
+        }, 5000);
+      }
+    }
+  </script>
+</body>
+</html>
